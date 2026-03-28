@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { motion } from 'framer-motion';
 
@@ -11,6 +11,20 @@ const LandingPage: React.FC = () => {
     return /^9[78]\d{8}$/.test(phone);
   };
 
+  // Programmatically resets iOS Safari viewport zoom when navigating away from input fields.
+  // iOS persists the zoom-in state even across SPA component swaps. Toggling the
+  // viewport meta tag forces the browser to snap back to scale=1.
+  const resetViewportZoom = () => {
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+      // Small delay then restore to allow user zoom if needed (keeps accessibility)
+      setTimeout(() => {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover');
+      }, 300);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.gender) {
@@ -21,6 +35,9 @@ const LandingPage: React.FC = () => {
       setError('Invalid Nepali phone number (starts with 97/98, 10 digits)');
       return;
     }
+    // Blur any active input first to dismiss keyboard, then reset zoom
+    (document.activeElement as HTMLElement)?.blur();
+    resetViewportZoom();
     setUser(formData);
   };
 
