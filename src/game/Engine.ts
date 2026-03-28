@@ -24,6 +24,7 @@ export class GameEngine {
   private gameStore: any = null;
   private boostTimer: number = 0;
   private pickups: { id: string, lane: number, z: number, active: boolean }[] = [];
+  private horizonY: number = 0;
 
   // Image assets for character
   private images: { [key: string]: HTMLImageElement } = {};
@@ -49,10 +50,15 @@ export class GameEngine {
     this.vehicle = vehicle || 'bike';
     this.gameStore = gameStore;
 
+    this.handleResize(canvas.width, canvas.height);
     this.initTrack();
     this.loadAssets();
     this.spawnInitialObjects();
     this.setupInput();
+  }
+
+  public handleResize(_width: number, height: number) {
+    this.horizonY = height / 10;
   }
 
   private loadAssets() {
@@ -61,6 +67,11 @@ export class GameEngine {
       'bike': GAME_CONSTANTS.ASSETS.PLAYER_BIKE,
       'scooter': GAME_CONSTANTS.ASSETS.PLAYER_SCOOTER
     };
+
+    const totalToLoad = Object.keys(assets).length + 21;
+    this.loadedAssets = 0;
+    
+    console.log(`📡 [ENGINE] Initializing Assets: 0/${totalToLoad}`);
 
     Object.entries(assets).forEach(([key, src]) => {
       const absoluteSrc = src.startsWith('/') ? src : `/${src}`;
@@ -72,21 +83,25 @@ export class GameEngine {
         }
       };
       img.onerror = () => {
-        console.error(`❌ ${key} Asset FAILED: ${absoluteSrc}. Falling back to procedural.`);
         this.loadedAssets++;
       };
       img.src = absoluteSrc;
     });
 
-    // 2. House assets (21 types)
+    // 2. House assets (21 types) - Pre-allocated for order
+    this.houseImages = new Array(21).fill(null);
     for (let i = 1; i <= 21; i++) {
         const typeStr = i.toString().padStart(2, '0');
         const src = `/assets/house/house_type${typeStr}.png`;
         const img = new Image();
         img.onload = () => {
             if (img.naturalWidth > 0) {
-                this.houseImages.push(img);
+                this.houseImages[i-1] = img;
+                this.loadedAssets++;
             }
+        };
+        img.onerror = () => {
+            this.loadedAssets++;
         };
         img.src = src;
     }
@@ -201,11 +216,7 @@ export class GameEngine {
     this.cityOffset = (this.cityOffset + (0.05 * speedPct * dt)) % 1;
     this.mountainOffset = (this.mountainOffset + (0.02 * speedPct * dt)) % 1;
 
-    // Win Check
-    if (this.distance > 0 && this.distance % 5000 === 0 && Math.random() < 0.05) {
-        this.onWin();
-        return;
-    }
+    // End-of-race Win Condition is now safely handled by checkWin() in the store upon crashing.
 
     this.updateTraffic(dt);
     this.checkCollisions(); // Fixed: 0 arguments
@@ -250,6 +261,7 @@ export class GameEngine {
             car.z = furthestZ + 2000 + (Math.random() * 3000);
             car.lane = Math.random() > 0.5 ? 1 : 0;
             car.speed = 60 + Math.random() * 40;
+            car.passed = false;
             // Break to avoid cascading the furthestZ in the same frame
             break; 
         }
@@ -276,10 +288,22 @@ export class GameEngine {
           return;
         }
 
-        if (sideDist < GAME_CONSTANTS.NEAR_MISS_DISTANCE && longDist < 300 && !this.isCrashed) {
-            if (this.speed > 50) {
+        // Passing logic: Score + Near Miss evaluation is done ONCE per car when passed
+        if (car.z < this.playerZ && !car.passed && !this.isCrashed) {
+            car.passed = true;
+            
+            // Dynamic Scoring based on Speed
+            let passScore = 100;
+            if (this.speed >= 200) passScore = 500;
+            else if (this.speed >= 180) passScore = 400;
+            else if (this.speed >= 160) passScore = 300;
+            else if (this.speed >= 120) passScore = 200;
+            
+            this.score += passScore;
+            
+            // Evaluate if it was a near miss during the pass
+            if (sideDist < GAME_CONSTANTS.NEAR_MISS_DISTANCE && this.speed > 50) {
                 this.nearMisses++;
-                this.score += 500;
             }
         }
       }
@@ -333,6 +357,7 @@ export class GameEngine {
             type: typeRand > 0.7 ? 'truck' : 'car',
             width: 0.8,
             length: 400,
+            passed: false,
             color: vehicleColors[Math.floor(Math.random() * vehicleColors.length)]
         });
     }
@@ -663,8 +688,8 @@ export class GameEngine {
 
     ctx.save();
     
-    // Position refined to be 'further' into the road for realism
-    const renderY = canvas.height - 180;
+    // Position refined with responsive Relative Metrics! 
+    const renderY = canvas.height * 0.85; // 85% down the screen, leaving exactly 15% bottom margin
 
     // --- A. GROUND CONTACT SHADOW (Pro-Level Gradient) ---
     ctx.save();
@@ -674,15 +699,17 @@ export class GameEngine {
     shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.scale(1, 0.3); 
     ctx.fillStyle = shadowGrad;
+    // Shadow anchored to height to accurately match bike bounding
+    const baseShadow = canvas.height * 0.20;
     ctx.beginPath();
-    ctx.arc(0, 0, 150 + (this.speed/10), 0, Math.PI * 2);
+    ctx.arc(0, 0, baseShadow + (this.speed/10), 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     // --- B. NITRO BLUE FIRE EFFECTS ---
     if (isBoosted) {
         ctx.save();
-        ctx.translate(canvas.width / 2, renderY + 40);
+        ctx.translate(canvas.width / 2, renderY + (canvas.height * 0.05));
         ctx.shadowBlur = 45;
         ctx.shadowColor = '#00F0FF';
         for(let i=0; i<8; i++) {
@@ -695,18 +722,20 @@ export class GameEngine {
     }
 
     if (img && (img.complete && img.naturalWidth > 0)) {
-        // --- HIGH-FIDELITY PNG (Scaled for better Road Depth) ---
-        const scaleFactor = 0.42; 
-        const w = 550 * scaleFactor;
-        const h = w * (img.height / img.width);
+        // --- HIGH-FIDELITY PNG (Responsive Relative Scaling Anchored to Height!) ---
+        // Anchoring to HEIGHT ensures it never gets ridiculously tall on small squashy screens like iPhone SE
+        const h = canvas.height * 0.45; // Reduced further to 45% per user request
+        const w = h * (img.width / img.height);
         
         ctx.translate(canvas.width / 2 + sx + boostShake, renderY + sy + boostShake); 
         ctx.rotate(tilt);
-        ctx.drawImage(img, -w / 2, -h + 20, w, h);
+        // The Y offset is gently pushed down by 3% height to settle the tire visually
+        ctx.drawImage(img, -w / 2, -h + (canvas.height * 0.03), w, h);
     } else {
         // --- VIBRANT FALLBACK ---
-        const scaleFactor = 0.6;
-        ctx.translate(canvas.width / 2 + sx, renderY - 40 + sy); 
+        // Dynamically compute scale anchored to Height
+        const scaleFactor = (canvas.height / 932) * 1.25;
+        ctx.translate(canvas.width / 2 + sx, renderY - (canvas.height * 0.04) + sy); 
         ctx.scale(scaleFactor, scaleFactor);
         ctx.rotate(tilt);
 
@@ -753,11 +782,10 @@ export class GameEngine {
     // Prevents 'exploding' size while allowing smooth passing visuals
     const safeZ = Math.max(50, p.camera.z); 
     const scale = GAME_CONSTANTS.CAMERA_DEPTH / safeZ;
-    const horizonY = this.canvas.height / 10;
     
     p.screen = {
       x: Math.round((this.canvas.width / 2) + (scale * p.camera.x * this.canvas.width / 2)),
-      y: Math.round(horizonY - (scale * p.camera.y * this.canvas.height / 2)),
+      y: Math.round(this.horizonY - (scale * p.camera.y * this.canvas.height / 2)),
       w: Math.round(scale * GAME_CONSTANTS.ROAD_WIDTH * this.canvas.width / 2),
       z: p.camera.z
     };

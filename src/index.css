@@ -68,9 +68,34 @@ body {
   width: 100%;
   height: 100%;
   max-width: 500px;
+  margin: 0 auto;
   position: relative;
   background-color: #000;
   box-shadow: 0 0 100px rgba(0, 0, 0, 1);
+  overflow: hidden;
+}
+
+/* Vertical Media Queries - Prevents Overlaps on Squat Screens */
+@media (max-height: 740px) {
+  .res-gap { gap: 1rem !important; }
+  .res-gap-lg { gap: 1.5rem !important; }
+  .res-p { padding: 1rem !important; }
+  .res-py { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+  .res-py-btn { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+  .res-logo { font-size: 3rem !important; margin-top: 0 !important; }
+  .res-input { padding: 0.5rem !important; }
+  .res-mt { margin-top: 0.5rem !important; }
+}
+
+@media (max-height: 680px) {
+  .res-gap { gap: 0.5rem !important; }
+  .res-gap-lg { gap: 1rem !important; }
+  .res-p { padding: 0.75rem !important; }
+  .res-py { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+  .res-py-btn { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+  .res-logo { font-size: 2.5rem !important; margin-top: 0 !important; }
+  .res-input { padding: 0.4rem !important; font-size: 0.7rem !important; }
+  .res-mt { margin-top: 0.25rem !important; }
 }
 
 .speed-bg {

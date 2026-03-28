@@ -61,8 +61,8 @@ export const useGameStore = create<GameState>()(
       }),
 
       checkWin: () => {
-        const won = Math.random() < 0.05; // 5% Win rate
         const { stats, highScore } = get();
+        const won = stats.score >= 20000; // Win condition based on score threshold
         
         if (stats.score > highScore) {
           set({ highScore: stats.score });

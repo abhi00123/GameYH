@@ -17,20 +17,33 @@ const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, onWin, v
     if (canvasRef.current && engineStartedRef.current !== vehicle) {
       const canvas = canvasRef.current;
       
-      const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      const updateCanvasSize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = window.innerWidth;
+        const displayHeight = window.innerHeight;
+
+        // Set the internal resolution (DPR aware)
+        canvas.width = displayWidth * dpr;
+        canvas.height = displayHeight * dpr;
+
+        // Set the CSS display size
+        canvas.style.width = `${displayWidth}px`;
+        canvas.style.height = `${displayHeight}px`;
+
+        if (engineRef.current) {
+          (engineRef.current as any).handleResize(canvas.width, canvas.height);
+        }
       };
       
-      window.addEventListener('resize', resize);
-      resize();
+      window.addEventListener('resize', updateCanvasSize);
+      updateCanvasSize();
 
       // Clear old engine if exists
       if (engineRef.current) {
-        (engineRef.current as any).canvas = null;
+        engineRef.current.stop();
       }
 
-      // Initialize engine with store
+      // Initialize engine
       const engine = new GameEngine(
         canvas, 
         onGameOver, 
@@ -43,7 +56,7 @@ const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, onWin, v
       engine.start();
 
       return () => {
-        window.removeEventListener('resize', resize);
+        window.removeEventListener('resize', updateCanvasSize);
         if (engineRef.current) {
           engineRef.current.stop();
           engineRef.current = null;
@@ -56,7 +69,7 @@ const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, onWin, v
   return (
     <canvas 
       ref={canvasRef} 
-      className="w-full h-full block bg-black"
+      className="fixed top-0 left-0 w-full h-full block bg-black touch-none overflow-hidden"
     />
   );
 });

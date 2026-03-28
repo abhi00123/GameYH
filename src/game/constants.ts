@@ -52,4 +52,5 @@ export interface TrafficInstance {
   length: number;
   imageIndex?: number; 
   color: string; // Hex code for procedural 3D body
+  passed?: boolean; // Track if player has scored this car
 }
