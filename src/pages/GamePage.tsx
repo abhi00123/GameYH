@@ -148,8 +148,8 @@ const GameHUD: React.FC<{showTutorial: boolean}> = React.memo(({ showTutorial })
       </div>
 
       {/* BOTTOM CONSOLE: Interaction & Speedometer */}
-      {/* PB-8 physically shifts the HUD up avoiding bottom edge bleeding on all phones */}
-      <div className="flex justify-end items-end pb-8 pr-2">
+      {/* PB-20 shifts it forcefully above iOS Safari bottom navigation tabs / UI elements */}
+      <div className="flex justify-end items-end pb-20 pr-6 xl:pb-12 xl:pr-4">
         
         {/* AGGRESSIVE NEON SPEEDOMETER */}
         <motion.div 

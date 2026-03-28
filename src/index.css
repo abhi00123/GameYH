@@ -45,7 +45,13 @@
   overflow: hidden;
   user-select: none;
   -webkit-touch-callout: none;
+  /* Disable double-tap zoom on mobile */
+  touch-action: manipulation;
 }
+
+/* Safe-area helpers for iOS Dynamic Island / Android chins */
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 body {
   margin: 0;
@@ -94,7 +100,8 @@ body {
   .res-py { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
   .res-py-btn { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
   .res-logo { font-size: 2.5rem !important; margin-top: 0 !important; }
-  .res-input { padding: 0.4rem !important; font-size: 0.7rem !important; }
+  /* NOTE: font-size must NOT go below 16px to prevent iOS Safari input zoom */
+  .res-input { padding: 0.4rem !important; }
   .res-mt { margin-top: 0.25rem !important; }
 }
 

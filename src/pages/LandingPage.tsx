@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { motion } from 'framer-motion';
 
@@ -78,7 +78,7 @@ const LandingPage: React.FC = () => {
              <input
                type="text"
                placeholder="ENTER YOUR NAME"
-               className="w-full sci-fi-input placeholder:text-white/10 text-xs p-3 res-input"
+               className="w-full sci-fi-input placeholder:text-white/20 text-base font-bold p-3 res-input"
                value={formData.name}
                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
              />
@@ -92,7 +92,7 @@ const LandingPage: React.FC = () => {
                type="tel"
                placeholder="98XXXXXXXX"
                maxLength={10}
-               className="w-full sci-fi-input placeholder:text-white/10 text-xs p-3 res-input"
+               className="w-full sci-fi-input placeholder:text-white/20 text-base font-bold p-3 res-input"
                value={formData.phone}
                onChange={(e) => {
                  const val = e.target.value.replace(/\D/g, '');
@@ -139,3 +139,4 @@ const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+

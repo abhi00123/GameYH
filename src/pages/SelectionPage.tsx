@@ -60,7 +60,7 @@ const SelectionPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-between w-full min-h-[100dvh] bg-black text-white relative p-4 res-p select-none font-sans overflow-hidden">
+    <div className="flex flex-col items-center justify-between w-full min-h-[100dvh] bg-black text-white relative p-4 res-p select-none font-sans overflow-hidden safe-top safe-bottom">
       
       {/* 2. CRT ARCADE SCANLINES (Global) */}
       <div className="crt-overlay pointer-events-none" />
@@ -162,7 +162,7 @@ const SelectionPage: React.FC = () => {
       </div>
 
       {/* --- Final Call to Action --- */}
-      <div className="w-full flex flex-col items-center gap-4 res-gap-lg px-4 pb-8 res-p z-50 mt-auto">
+      <div className="w-full flex flex-col items-center gap-4 res-gap-lg px-4 pb-6 res-p z-50 mt-auto" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
         <button
           onClick={handleStart}
           className="w-full arcade-btn py-4 res-py-btn text-xl"
