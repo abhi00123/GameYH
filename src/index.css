@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+@theme {
+  --color-yamaha-blue: #004A99;
+  --color-yamaha-light-blue: #00A3E0;
+  --color-yamaha-dark-blue: #002855;
+  --color-yamaha-glow: #00F0FF;
+  
+  --animate-glow-pulse: glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-speed-zoom: speed-zoom 15s linear infinite;
+  
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 1; filter: brightness(1.5) blur(2px); }
+    50% { opacity: 0.5; filter: brightness(1) blur(0px); }
+  }
+
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  @keyframes speed-zoom {
+    0% { transform: scale(1); opacity: 0; }
+    5%, 95% { opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+  }
+
+  @keyframes rotate-ring {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  @keyframes crt-flicker {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.15; }
+    100% { opacity: 0.1; }
+  }
+}
+
+:root {
+  background-color: #000;
+  color: white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  /* Garage Grid Pattern */
+  background-image: 
+    linear-gradient(rgba(0, 163, 224, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 163, 224, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  position: relative;
+  background-color: #000;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 1);
+}
+
+.speed-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  background-image: 
+    radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 80%),
+    repeating-radial-gradient(circle, transparent 0, transparent 100px, rgba(0, 240, 255, 0.1) 101px, rgba(0, 240, 255, 0.1) 102px);
+  mask-image: radial-gradient(circle at center, transparent, black);
+  animation: var(--animate-speed-zoom);
+  pointer-events: none;
+}
+
+.carbon-pattern {
+  background-image: radial-gradient(#111 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* --- Premium "Glass-Cyber" UI --- */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.glow-aura {
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.2);
+}
+
+.text-glow-premium {
+  text-shadow: 0 0 15px rgba(0, 240, 255, 0.5), 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.chrome-text {
+  background: linear-gradient(to bottom, #fff 0%, #aaa 50%, #fff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
+}
+
+.garage-beam {
+  background: linear-gradient(to bottom, transparent, rgba(0, 163, 224, 0.1), transparent);
+  width: 2px;
+  height: 100%;
+  position: absolute;
+}
+
+.btn-confirm-chrome {
+  @apply relative font-black uppercase italic tracking-[0.4em] transition-all active:scale-95;
+  background: linear-gradient(135deg, #00A3E0 0%, #004A99 50%, #002855 100%);
+  border: 1px solid rgba(0, 240, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: 
+    0 0 30px rgba(0, 163, 224, 0.4), 
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.btn-confirm-chrome::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-25deg);
+  transition: 0.5s;
+}
+
+.btn-confirm-chrome:hover::before {
+  left: 200%;
+}
+
+/* --- ARCADE EDITION STYLES --- */
+
+.arcade-btn {
+  @apply relative font-black uppercase italic tracking-[0.4em] transition-all;
+  background: #00F0FF;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 0 #004A99, 
+    0 15px 20px rgba(0,0,0,0.5),
+    inset 0 4px 6px rgba(255,255,255,0.4);
+  color: #000;
+  cursor: pointer;
+}
+
+.arcade-btn:active {
+  transform: translateY(6px);
+  box-shadow: 
+    0 2px 0 #004A99,
+    0 5px 10px rgba(0,0,0,0.5);
+}
+
+.sci-fi-input {
+  @apply bg-white/5 border-l-4 border-yamaha-glow/50 p-4 transition-all outline-none font-black text-center;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.sci-fi-input:focus {
+  @apply bg-white/15 border-yamaha-glow shadow-[0_0_20px_rgba(0,240,255,0.2)];
+}
+
+.corner-bracket {
+  @apply absolute w-4 h-4 border-yamaha-glow;
+}
+
+.cb-tl { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+.cb-tr { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+.cb-bl { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+.cb-br { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+
+.holographic-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  border: 2px solid rgba(0, 240, 255, 0.2);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 60px rgba(0, 240, 255, 0.1),
+    inset 0 0 60px rgba(0, 240, 255, 0.1);
+  animation: rotate-ring 10s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.holographic-ring::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: #00F0FF;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #00F0FF;
+}
+
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    rgba(18, 16, 16, 0) 0,
+    rgba(18, 16, 16, 0.1) 50%,
+    rgba(18, 16, 16, 0) 100%
+  );
+  background-size: 100% 4px;
+  z-index: 100;
+  pointer-events: none;
+  animation: crt-flicker 0.15s infinite;
+}
+
+.text-ghosting {
+  filter: drop-shadow(4px 0 0 rgba(255,0,85,0.4)) drop-shadow(-4px 0 0 rgba(0,240,255,0.4));
+}
+
+.nav-glow-pulse {
+  animation: nav-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes nav-pulse {
+  0%, 100% { 
+    opacity: 0.2; 
+    filter: drop-shadow(0 0 0px rgba(0, 240, 255, 0));
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.8));
+    transform: scale(1.1);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.metallic-panel {
+  @apply bg-black/40 backdrop-blur-xl border border-white/10;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+canvas {
+  touch-action: none;
+}
