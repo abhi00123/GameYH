@@ -4,7 +4,7 @@ import GameCanvas from '../components/GameCanvas';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GamePage: React.FC = () => {
-  const setStatus = useGameStore((state) => state.setStatus);
+
   const checkWin = useGameStore((state) => state.checkWin);
   const vehicle = useGameStore((state) => state.vehicle);
 
@@ -12,13 +12,11 @@ const GamePage: React.FC = () => {
     checkWin();
   }, [checkWin]);
 
-  const handleWin = useCallback(() => {
-    setStatus('result');
-  }, [setStatus]);
+  // Note: Winning is now handled directly via Game Over logic evaluating the score threshold
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black select-none font-sans">
-      <GameCanvas onGameOver={handleGameOver} onWin={handleWin} vehicle={vehicle} />
+      <GameCanvas onGameOver={handleGameOver} vehicle={vehicle} />
       <GameHUD />
     </div>
   );

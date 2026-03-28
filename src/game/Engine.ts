@@ -14,8 +14,7 @@ export class GameEngine {
   private isCrashed: boolean = false;
   private vehicle: string;
   private targetLane: number = 0; // 0: left, 1: right
-  private onGameOver: (stats: { distance: number, score: number, nearMisses: number }) => void;
-  private onWin: () => void;
+    private onGameOver: (stats: { distance: number, score: number, nearMisses: number }) => void;
   private traffic: TrafficInstance[] = [];
   private score: number = 0;
   private nearMisses: number = 0;
@@ -39,14 +38,12 @@ export class GameEngine {
   constructor(
     canvas: HTMLCanvasElement,
     onGameOver: (stats: any) => void,
-    onWin: () => void,
     vehicle: string,
     gameStore: any
   ) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
     this.onGameOver = onGameOver;
-    this.onWin = onWin;
     this.vehicle = vehicle || 'bike';
     this.gameStore = gameStore;
 
