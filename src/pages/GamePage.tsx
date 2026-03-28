@@ -1,12 +1,12 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import GameCanvas from '../components/GameCanvas';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GamePage: React.FC = () => {
-
   const checkWin = useGameStore((state) => state.checkWin);
   const vehicle = useGameStore((state) => state.vehicle);
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const handleGameOver = useCallback(() => {
     checkWin();
@@ -14,31 +14,96 @@ const GamePage: React.FC = () => {
 
   // Note: Winning is now handled directly via Game Over logic evaluating the score threshold
 
+  const dismissTutorial = () => {
+    if (showTutorial) setShowTutorial(false);
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black select-none font-sans">
-      <GameCanvas onGameOver={handleGameOver} vehicle={vehicle} />
-      <GameHUD />
+    <div 
+        className="relative w-full h-full overflow-hidden bg-black select-none font-sans"
+        onTouchStart={dismissTutorial}
+        onMouseDown={dismissTutorial}
+    >
+      <GameCanvas onGameOver={handleGameOver} vehicle={vehicle} isPaused={showTutorial} />
+      <GameHUD showTutorial={showTutorial} />
     </div>
   );
 };
 
 // Extracted HUD to prevent GameCanvas re-renders on every stat update
-const GameHUD: React.FC = React.memo(() => {
+const GameHUD: React.FC<{showTutorial: boolean}> = React.memo(({ showTutorial }) => {
   const stats = useGameStore((state) => state.stats);
 
-  // SVG Gauge calculations
-  const radius = 46;
-  const circumference = 2 * Math.PI * radius; // ~289
-  const arcLength = circumference * 0.75; // 270 degree arc (~216.7)
+  // SVG Gauge calculations (Upgraded Size)
+  const radius = 56;
+  const circumference = 2 * Math.PI * radius; // ~351
+  const arcLength = circumference * 0.75; // 270 degree arc (~263)
   const maxSpeed = 280; // Top speed scale reference
   const speedRatio = Math.min(stats.speed / maxSpeed, 1);
   const strokeDashoffset = arcLength * (1 - speedRatio);
+  
+  // Dynamic color threshold
+  const isHighSpeed = stats.speed > 160;
 
   return (
-    <div className="absolute inset-0 pointer-events-none p-4 res-p flex flex-col justify-between z-40">
+    <div className="absolute inset-0 pointer-events-none px-4 pt-12 pb-6 flex flex-col justify-between z-40">
       
+      {/* FULL SCREEN TUTORIAL OVERLAY */}
+      <AnimatePresence>
+        {showTutorial && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md pointer-events-none"
+          >
+            <div className="flex gap-8 items-end mb-8">
+               {/* Gesture 1: Swipe to Dodge */}
+               <div className="flex flex-col items-center">
+                 <motion.div
+                   animate={{ x: [-35, 35, -35] }}
+                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                   className="mb-4"
+                 >
+                   <div className="w-16 h-16 bg-yamaha-glow/20 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.6)] border border-yamaha-glow/30">
+                     <span className="text-4xl drop-shadow-[0_0_20px_rgba(0,240,255,1)]">👆</span>
+                   </div>
+                 </motion.div>
+                 <h2 className="text-xl font-black italic tracking-widest uppercase chrome-text text-ghosting text-center leading-tight">
+                    SWIPE<br/>TO DODGE
+                 </h2>
+               </div>
+
+               {/* Divider Ring */}
+               <div className="w-[1px] h-24 bg-white/20 relative top-2 rounded-full" />
+
+               {/* Gesture 2: Hold to Accelerate */}
+               <div className="flex flex-col items-center">
+                 <motion.div
+                   animate={{ scale: [1, 0.8, 1] }}
+                   transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
+                   className="mb-4 relative"
+                 >
+                   <div className="absolute inset-0 bg-yellow-400 rounded-full blur animate-ping opacity-30" />
+                   <div className="w-16 h-16 relative bg-yellow-400/20 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(250,204,21,0.6)] border border-yellow-400/30">
+                     <span className="text-4xl drop-shadow-[0_0_20px_rgba(250,204,21,1)]">👆</span>
+                   </div>
+                 </motion.div>
+                 <h2 className="text-xl font-black italic tracking-widest uppercase text-yellow-400 text-glow-premium text-center leading-tight [text-shadow:0_0_20px_rgba(250,204,21,0.8)]">
+                    HOLD<br/>TO ACCEL
+                 </h2>
+               </div>
+            </div>
+
+            <p className="mt-8 text-[11px] font-black tracking-[0.6em] uppercase text-white animate-pulse bg-white/10 py-3 px-8 rounded-full border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                TAP TO START RACING
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* TOP CONSOLE: Stats & Progress */}
-      <div className="flex justify-between items-start mt-2">
+      <div className="flex justify-between items-start">
         
         {/* Left Console: Distance & Score */}
         <motion.div 
@@ -83,73 +148,65 @@ const GameHUD: React.FC = React.memo(() => {
       </div>
 
       {/* BOTTOM CONSOLE: Interaction & Speedometer */}
-      <div className="flex justify-between items-end pb-4 res-p">
+      {/* PB-8 physically shifts the HUD up avoiding bottom edge bleeding on all phones */}
+      <div className="flex justify-end items-end pb-8 pr-2">
         
-        {/* Interaction Guide */}
-        <div className="flex flex-col gap-2 mb-2">
-           <motion.div 
-              animate={{ opacity: [0.3, 1, 0.3], x: [-5, 5, -5] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-transparent via-white/10 to-transparent border-y border-white/5 backdrop-blur-sm"
-           >
-              <div className="w-2 h-2 rounded-full bg-yamaha-glow shadow-[0_0_8px_rgba(0,240,255,1)] animate-ping" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60 italic drop-shadow-md scale-y-110">SWIPE TO DODGE</span>
-           </motion.div>
-        </div>
-
-        {/* HIGH-END SVG ARC SPEEDOMETER */}
+        {/* AGGRESSIVE NEON SPEEDOMETER */}
         <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="relative origin-bottom-right drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="relative origin-bottom-right drop-shadow-[0_10px_30px_rgba(0,0,0,1)]"
         >
-          <div className="w-[120px] h-[120px] relative flex items-center justify-center">
+          <div className="w-[140px] h-[140px] relative flex flex-col items-center justify-center">
              
-             {/* Background Pulse Ring */}
-             <div className="absolute inset-2 bg-yamaha-glow/10 rounded-full blur-xl animate-pulse" />
+             {/* Dynamic Neon Flare */}
+             <div className={`absolute inset-4 rounded-full blur-[20px] animate-pulse ${isHighSpeed ? 'bg-[#FF0055]/30' : 'bg-yamaha-glow/20'}`} />
 
-             {/* SVG HUD Track */}
+             {/* Tech Grid Core */}
+             <div className="absolute inset-1 rounded-full border border-white/5 bg-[radial-gradient(circle_at_center,rgba(0,240,255,0.05)_0%,transparent_70%)]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 20px)'}} />
+
              <svg className="absolute inset-0 w-full h-full -rotate-[135deg] pointer-events-none">
-               {/* Dark Track */}
+               {/* Heavy Backbone Track */}
                <circle 
-                 cx="60" cy="60" r={radius} 
-                 fill="none" 
-                 stroke="rgba(255,255,255,0.1)" 
-                 strokeWidth="8" 
-                 strokeDasharray={`${arcLength} ${circumference}`} 
-                 strokeLinecap="round" 
+                 cx="70" cy="70" r={radius} 
+                 fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="14" 
+                 strokeDasharray={`${arcLength} ${circumference}`} strokeLinecap="round" 
+               />
+               <circle 
+                 cx="70" cy="70" r={radius} 
+                 fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" 
+                 strokeDasharray={`${arcLength} ${circumference}`} strokeLinecap="round" 
                />
                
-               {/* Neon Progress Track */}
+               {/* High-Voltage Velocity Arc */}
                <circle 
-                 cx="60" cy="60" r={radius} 
+                 cx="70" cy="70" r={radius} 
                  fill="none" 
-                 stroke="#00F0FF" 
-                 strokeWidth="8" 
+                 stroke={isHighSpeed ? "#FF0055" : "#00F0FF"} 
+                 strokeWidth="10" 
                  strokeDasharray={`${arcLength} ${circumference}`}
                  strokeDashoffset={strokeDashoffset}
                  strokeLinecap="round"
-                 style={{ transition: 'stroke-dashoffset 0.1s linear' }}
-                 className="drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]"
+                 style={{ transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s ease' }}
+                 className={isHighSpeed ? "drop-shadow-[0_0_15px_rgba(255,0,85,1)]" : "drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]"}
                />
 
-               {/* Inner decorative dotted track */}
+               {/* Precision Tick Marks */}
                <circle 
-                 cx="60" cy="60" r={radius - 12} 
-                 fill="none" 
-                 stroke="rgba(255,255,255,0.2)" 
-                 strokeWidth="2" 
-                 strokeDasharray="4 8"
-                 strokeLinecap="round" 
+                 cx="70" cy="70" r={radius - 18} 
+                 fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="3" 
+                 strokeDasharray="2 12" strokeLinecap="round" 
                />
              </svg>
              
-             {/* Digital Number Center */}
-             <div className="w-[82px] h-[82px] bg-black/80 backdrop-blur-md rounded-full border border-yamaha-glow/30 flex flex-col items-center justify-center shadow-[inset_0_0_20px_rgba(0,240,255,0.15)] z-10">
-                <p className="text-[40px] font-black italic text-white tracking-tighter leading-none tabular-nums drop-shadow-[0_0_12px_rgba(255,255,255,0.6)] relative top-1">
+             {/* Digital Engine Display */}
+             <div className="absolute w-[94px] h-[94px] bg-black/90 backdrop-blur-md rounded-full border border-white/10 flex flex-col items-center justify-center shadow-[inset_0_0_30px_rgba(0,0,0,1)] z-10">
+                <p className={`text-[46px] font-black italic tracking-tighter leading-none tabular-nums relative top-1 transition-colors duration-300 ${isHighSpeed ? 'text-[#FF0055] drop-shadow-[0_0_15px_rgba(255,0,85,0.8)]' : 'text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]'}`}>
                   {stats.speed}
                 </p>
-                <p className="text-[9px] font-black text-yamaha-glow tracking-[0.3em] uppercase opacity-80 mt-1">KPH</p>
+                <p className="text-[10px] font-black text-yamaha-glow tracking-[0.3em] uppercase opacity-70 mt-1">
+                  KPH
+                </p>
              </div>
           </div>
         </motion.div>

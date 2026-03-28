@@ -25,21 +25,24 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-[100dvh] p-2 sm:p-4 bg-black relative overflow-hidden text-white carbon-pattern">
+    <div className="flex flex-col items-center justify-center w-full min-h-[100dvh] p-4 bg-black relative overflow-y-auto overflow-x-hidden text-white carbon-pattern">
  
-       {/* 1. EXTREME SPEED TUNNEL */}
-       <div className="speed-bg pointer-events-none" style={{ animationDuration: '8s', opacity: 0.8 }} />
-       <div className="speed-bg pointer-events-none" style={{ animationDuration: '12s', opacity: 0.5 }} />
-       <div className="speed-bg pointer-events-none" style={{ animationDuration: '20s', opacity: 0.3 }} />
- 
-       {/* 2. CRT ARCADE SCANLINES (Global) */}
-       <div className="crt-overlay pointer-events-none" />
- 
-       {/* 3. ATMOSPHERIC SHADING */}
-       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-yamaha-blue/30 via-transparent to-yamaha-glow/20 pointer-events-none" />
- 
-       {/* 4. HOLOGRAPHIC RING (Behind Card) */}
-       <div className="holographic-ring scale-75 opacity-20 pointer-events-none" />
+       {/* BOUNDED BACKGROUND EFFECTS CAGE (Stops animation from causing scroll!) */}
+       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+           {/* 1. EXTREME SPEED TUNNEL */}
+           <div className="speed-bg pointer-events-none" style={{ animationDuration: '8s', opacity: 0.8 }} />
+           <div className="speed-bg pointer-events-none" style={{ animationDuration: '12s', opacity: 0.5 }} />
+           <div className="speed-bg pointer-events-none" style={{ animationDuration: '20s', opacity: 0.3 }} />
+     
+           {/* 2. CRT ARCADE SCANLINES (Global) */}
+           <div className="crt-overlay pointer-events-none" />
+     
+           {/* 3. ATMOSPHERIC SHADING */}
+           <div className="absolute inset-0 bg-gradient-to-tr from-yamaha-blue/30 via-transparent to-yamaha-glow/20 pointer-events-none" />
+     
+           {/* 4. HOLOGRAPHIC RING (Behind Card) */}
+           <div className="holographic-ring scale-75 opacity-20 pointer-events-none" />
+       </div>
  
        <motion.div
          initial={{ opacity: 0, scale: 1.2 }}

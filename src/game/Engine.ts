@@ -12,6 +12,7 @@ export class GameEngine {
   private segments: any[] = [];
   private totalSegments: number = 5000;
   private isCrashed: boolean = false;
+  public isPaused: boolean = true;
   private vehicle: string;
   private targetLane: number = 0; // 0: left, 1: right
     private onGameOver: (stats: { distance: number, score: number, nearMisses: number }) => void;
@@ -172,7 +173,7 @@ export class GameEngine {
   }
 
   public update(dt: number) {
-    if (this.isCrashed) return;
+    if (this.isCrashed || this.isPaused) return;
 
     // Dynamic Acceleration Logic (Frame-rate independent)
     const isAccelerating = this.keys['ArrowUp'] || this.touchStartX !== null;

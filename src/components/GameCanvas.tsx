@@ -5,9 +5,10 @@ import { useGameStore } from '../store/useGameStore';
 interface GameCanvasProps {
   onGameOver: (stats: any) => void;
   vehicle: string;
+  isPaused: boolean;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, vehicle }) => {
+const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, vehicle, isPaused }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const engineStartedRef = useRef<string | null>(null);
@@ -50,6 +51,7 @@ const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, vehicle 
         useGameStore 
       );
       engineRef.current = engine;
+      engine.isPaused = isPaused;
       engineStartedRef.current = vehicle;
       engine.start();
 
@@ -63,6 +65,12 @@ const GameCanvas: React.FC<GameCanvasProps> = React.memo(({ onGameOver, vehicle 
       };
     }
   }, [onGameOver, vehicle]);
+
+  useEffect(() => {
+    if (engineRef.current) {
+      engineRef.current.isPaused = isPaused;
+    }
+  }, [isPaused]);
 
   return (
     <canvas 
